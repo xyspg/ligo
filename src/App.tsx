@@ -4,13 +4,19 @@ import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { LIGOScene } from "./components/LIGOScene";
 import { SignalGraph } from "./components/SignalGraph";
+import { DetectorDetailOverlay } from "./components/DetectorDetailOverlay";
 
 export default function App() {
   const [waveOn, setWaveOn] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const signalRef = useRef(0);
 
   const onSignalUpdate = useCallback((value: number) => {
     signalRef.current = value;
+  }, []);
+
+  const onDetectorClick = useCallback(() => {
+    setDetailOpen(true);
   }, []);
 
   return (
@@ -22,7 +28,7 @@ export default function App() {
       >
         <ambientLight intensity={0.15} />
         <pointLight position={[0, 10, 0]} intensity={0.5} />
-        <LIGOScene waveOn={waveOn} onSignalUpdate={onSignalUpdate} />
+        <LIGOScene waveOn={waveOn} onSignalUpdate={onSignalUpdate} onDetectorClick={onDetectorClick} />
         <OrbitControls
           makeDefault
           target={[1, 0, -2]}
@@ -114,6 +120,14 @@ export default function App() {
         * Mirror oscillation exaggerated for visual clarity. Real displacement
         is ~10⁻¹⁸ m (1/1000th the width of a proton).
       </div>
+
+      {/* Detector detail overlay */}
+      {detailOpen && (
+        <DetectorDetailOverlay
+          waveOn={waveOn}
+          onClose={() => setDetailOpen(false)}
+        />
+      )}
     </div>
   );
 }

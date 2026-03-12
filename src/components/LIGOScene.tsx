@@ -20,6 +20,7 @@ const WAVE_SPEED = 2;
 interface Props {
   waveOn: boolean;
   onSignalUpdate: (value: number) => void;
+  onDetectorClick: () => void;
 }
 
 function LaserSource() {
@@ -238,7 +239,7 @@ function InterferenceLabel({ waveOn }: { waveOn: boolean }) {
   );
 }
 
-export function LIGOScene({ waveOn, onSignalUpdate }: Props) {
+export function LIGOScene({ waveOn, onSignalUpdate, onDetectorClick }: Props) {
   // Animated mirror positions
   const xMirrorX = useRef(ARM_LENGTH);
   const zMirrorZ = useRef(-ARM_LENGTH);
@@ -336,7 +337,7 @@ export function LIGOScene({ waveOn, onSignalUpdate }: Props) {
           label="End Mirror"
         />
       </group>
-      <PhotodetectorAnimated waveOn={waveOn} />
+      <PhotodetectorAnimated waveOn={waveOn} onClick={onDetectorClick} />
 
       {/* Arm labels */}
       <ArmLabel from={[0, 0, 0]} to={[ARM_LENGTH, 0, 0]} label="4 km arm" />
@@ -467,7 +468,13 @@ function AnimatedBeams({
   );
 }
 
-function PhotodetectorAnimated({ waveOn }: { waveOn: boolean }) {
+function PhotodetectorAnimated({
+  waveOn,
+  onClick,
+}: {
+  waveOn: boolean;
+  onClick: () => void;
+}) {
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
@@ -486,7 +493,20 @@ function PhotodetectorAnimated({ waveOn }: { waveOn: boolean }) {
   });
 
   return (
-    <group position={[0, 0, DETECTOR_POS_Z]}>
+    <group
+      position={[0, 0, DETECTOR_POS_Z]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = "auto";
+      }}
+    >
       <mesh ref={meshRef}>
         <boxGeometry args={[0.6, 0.4, 0.6]} />
         <meshStandardMaterial color="#333333" emissive="#111111" />
@@ -498,6 +518,14 @@ function PhotodetectorAnimated({ waveOn }: { waveOn: boolean }) {
         anchorX="center"
       >
         Photodetector
+      </Text>
+      <Text
+        position={[0, -0.45, 0]}
+        fontSize={0.15}
+        color="rgba(255,255,255,0.35)"
+        anchorX="center"
+      >
+        (click for detail)
       </Text>
     </group>
   );
